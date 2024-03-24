@@ -1,77 +1,98 @@
 #include "get_next_line_bonus.h"
 
-void	polish_list(t_list **list)
+char	*remove_line(char *static_buf)
 {
-	t_list	*last_node;
-	t_list	*clean_node;
-	int		i;
-	int		k;
-	char	*buf;
+	int 	i;
+	int 	j;
+	char	*temp;
 
-	buf = malloc(BUFFER_SIZE + 1);
-	clean_node = malloc(sizeof(t_list));
-	if (NULL == buf || NULL == clean_node)
-		return ;
-	last_node = ft_lstlast(*list);
+	if (!strchr(static_buf, '\n') || !static_buf)
+	{
+		free(static_buf);
+		return (NULL);
+	}
 	i = 0;
-	k = 0;
-	while (last_node->buf[i] && last_node->buf[i] != '\n')
-		++i;
-	while (last_node->buf[i] && last_node->buf[++i])
-		buf[k++] = last_node->buf[i];
-	buf[k] = '\0';
-	clean_node->buf = buf;
-	clean_node->next = NULL;
-	dealloc(list, clean_node, buf);
+	while (static_buf[i] && static_buf[i] != '\n')
+		i++;
+	temp = malloc(sizeof(char) * (ft_strlen(static_buf, '\0') - i + 1));
+	if (!temp)
+		return (NULL);
+	i++;
+	j = 0;
+	while(static_buf[i])
+		temp[j++] = static_buf[i++];
+	free(static_buf);
+	return (temp);
 }
 
-char    *extract_line(t_list *buff)
+char    *get_line(char *buff)
 {
-    int     len;
     char    *line;
+    int     i;
 
-    if (!buff)
+    if (!*buff)
         return (NULL);
-    len = get_len_to_nl(buff);
-    line = malloc(sizeof(char) * (len + 1));
+    line = (char *)malloc(sizeof(char) * (ft_strlen(buff, '\n') + 2));
     if (!line)
         return (NULL);
-    copy_line(buff, line);
+    i = 0;
+    while (buff[i] && buff[i] != '\n')
+    {
+        line[i] = buff[i];
+        i++;
+    }
+    if (buff[i] && buff[i] == '\n')
+        line[i++] = '\n';
+    line[i] = '\0';
     return (line);
 }
 
-void    read_line(int fd, t_list **buff)
+char    *read_file(int fd, char *buff)
 {
-    char    *line;
-    int bytes_read;
+    int     bytes_read;
+    char    *buffer;
 
-    while (!found_nl(*buff))
+    if(!buff)
+        buff = (char *)malloc(sizeof(char));
+    buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
+    if (!buffer)
+        return (NULL);
+    bytes_read = 1;
+    while (!strchr(buff, '\n') && bytes_read)
     {
-        line = malloc(sizeof(char) * (BUFFER_SIZE + 1));
-        if (!line)
-            return ;
-        bytes_read = read(fd, line, BUFFER_SIZE);
-        if (!bytes_read)
+        bytes_read = read(fd, buffer, BUFFER_SIZE);
+        if (bytes_read == -1)
         {
-            free(line);
-            return ;
+            free(buffer);
+            free(buff);
+            buffer = NULL;
+            return (NULL);
         }
-        line[bytes_read] = '\0';
-        create_new_node(buff, line);
+        buffer[bytes_read] = '\0';
+        buff = ft_strjoin(buff, buffer);
     }
+    free (buffer);
+    return (buff);
 }
 
 char	*get_next_line(int fd)
 {
-    static t_list   *buff;
-    char            *line;
+    static char *buff[1024];
+    char        *line;
 
-    if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, &line, 0) < 0)
+    if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
+    {
+        if(buff[fd])
+        {
+            free(buff[fd]);
+            buff[fd] = NULL;
+        }
+         return (NULL);
+    }
+    buff[fd] = read_file(fd, buff[fd]);
+    if (!buff[fd])
         return (NULL);
-    read_line(fd, &buff);
-    if (buff == NULL)
-        return (NULL);
-    line = extract_line(buff);
-    polish_list(&buff);
+    line = get_line(buff[fd]);
+    buff[fd] = remove_line(buff[fd]);
     return (line);
 }

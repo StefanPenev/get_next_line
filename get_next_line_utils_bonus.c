@@ -1,134 +1,69 @@
 #include "get_next_line_bonus.h"
 
-void	dealloc(t_list **list, t_list *clean_node, char *buf)
+char	*ft_strjoin(char *s1, char *s2)
 {
-	t_list	*tmp;
+	int	i;
+	int	j;
+	char	*str;
 
-	if (NULL == *list)
-		return ;
-	while (*list)
+    if (!s1)
+        return (s2);
+	if (!s1 || !s2)
+		return (NULL);
+	str = (char *)malloc(ft_strlen(s1, '\0') + ft_strlen(s2, '\0') + 1);
+	if (!str)
+		return (NULL);
+	i = 0;
+	while (s1[i] != '\0')
 	{
-		tmp = (*list)->next;
-		free((*list)->buf);
-		free(*list);
-		*list = tmp;
+		str[i] = s1[i];
+		i++;
 	}
-	*list = NULL;
-	if (clean_node->buf[0])
-		*list = clean_node;
-	else
+	j = 0;
+	while (s2[j] != '\0')
 	{
-		free(buf);
-		free(clean_node);
+		str[i] = s2[j];
+		j++;
+		i++;
 	}
+	str[i] = '\0';
+    free(s1);
+	return (str);
 }
 
-void    copy_line(t_list *buff, char *line)
+int ft_strlen(char *s, char c)
 {
-    int i;
-    int j;
+    int    i;
 
-    if (!buff)
-        return ;
-    j = 0;
-    while (buff)
-    {
-        i = 0;
-        while (buff->buf[i])
-        {
-            if (buff->buf[i] == '\n')
-            {
-                line[j++] = '\n';
-                line[j] = '\0';
-                return ;
-            }
-            line[j] = buff->buf[i];
-            j++;
-            i++;
-        }
-        buff = buff->next;
-    }
-    line[j] = '\0';
-}
-
-int get_len_to_nl(t_list *buff)
-{
-    int i;
-    int len;
-
-    if (!buff)
+    if (!s)
         return (0);
-    len = 0;
-    while (buff)
-    {
-        i = 0;
-        while (buff->buf[i])
-        {
-            if (buff->buf[i] == '\n')
-            {
-                len++;
-                return (len);
-            }
-            len++;
-            i++;
-        }
-        buff = buff->next;
-    }
-    return (len);
+    i = 0;
+    while (s[i] && s[i] != c)
+        i++;
+    return (i);
 }
 
-void    create_new_node(t_list **buff, char  *line)
+char	*ft_strchr(char *s, int c)
 {
-    t_list  *new_node;
-    t_list  *last_node;
+	int	i;
+	char *result_ptr;
 
-    last_node = ft_lstlast(*buff);
-    new_node = ft_lstnew(line);
-    if (!new_node)
-        return ;
-    if (!last_node)
-        *buff = new_node;
-    else 
-        last_node->next = new_node;
-}
-
-int found_nl(t_list *list)
-{
-    int i;
-
-    if (!list)
-        return (0);
-    while (list)
-    {
-        i = 0;
-        while (list->buf[i])
-        {
-            if (list->buf[i] == '\n')
-                return (1);
-            i++;
-        }
-        list = list->next;
-    }
-    return (0);
-}
-
-t_list	*ft_lstnew(char *content)
-{
-	t_list *list;
-
-    list = (t_list *)malloc(sizeof(*list));
-    if (!list)
+    if (!s)
         return (NULL);
-    list->buf = content;
-    list->next = NULL;
-    return (list);
-}
-
-t_list	*ft_lstlast(t_list *lst)
-{
-	if (!lst)
-        return (NULL); 
-     while (lst->next)
-        lst = lst->next;
-    return (lst);
+	i = 1;
+	result_ptr = (char *)s;
+	if ((char)c == '\0')
+	{	
+		i = ft_strlen(s, '\n');
+		return (result_ptr + i);
+	}
+	if (result_ptr[0] == (char)c)
+		return (result_ptr);
+	while (s[i] != '\0')
+	{
+		if (s[i] == (char)c)
+			return(result_ptr + i);
+		i++;
+	}
+	return (NULL);
 }

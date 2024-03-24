@@ -1,66 +1,12 @@
 #include "get_next_line.h"
 
-char	*read_line(int fd, char *static_buf)
-{
-	char	*buf;
-	char	*temp;
-	int 	bytes_rd;
-
-	buf = malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if (!buf)
-		return (NULL);
-	bytes_rd = 1;
-	while (!ft_strchr(static_buf, '\n') && bytes_rd)
-	{
-		bytes_rd = read(fd, buf, BUFFER_SIZE);
-		if (bytes_rd == -1)
-		{
-			free(buf);
-			return (NULL);
-		}
-		buf[bytes_rd] = '\0';
-		temp = ft_strjoin(static_buf, buf);
-		static_buf = temp;
-	}
-	free(buf);
-	return (static_buf);
-}
-
-char	*get_line(char *static_buf)
-{
-	int		i;
-	char	*str;
-
-	i = 0;
-	if (!static_buf[i])
-		return (NULL);
-	while (static_buf[i] && static_buf[i] != '\n')
-		i++;
-	str = (char *)malloc(sizeof(char) * (i + 2));
-	if (!str)
-		return (NULL);
-	i = 0;
-	while (static_buf[i] && static_buf[i] != '\n')
-	{
-		str[i] = static_buf[i];
-		i++;
-	}
-	if (static_buf[i] == '\n')
-	{
-		str[i] = static_buf[i];
-		i++;
-	}
-	str[i] = '\0';
-	return (str);
-}
-
 char	*remove_line(char *static_buf)
 {
 	int 	i;
 	int 	j;
 	char	*temp;
 
-	if (!ft_strchr(static_buf, '\n') || !static_buf)
+	if (!strchr(static_buf, '\n') || !static_buf)
 	{
 		free(static_buf);
 		return (NULL);
@@ -68,7 +14,7 @@ char	*remove_line(char *static_buf)
 	i = 0;
 	while (static_buf[i] && static_buf[i] != '\n')
 		i++;
-	temp = malloc(sizeof(char) * (ft_strlen(static_buf) - i + 1));
+	temp = malloc(sizeof(char) * (ft_strlen(static_buf, '\0') - i + 1));
 	if (!temp)
 		return (NULL);
 	i++;
@@ -79,17 +25,74 @@ char	*remove_line(char *static_buf)
 	return (temp);
 }
 
+char    *get_line(char *buff)
+{
+    char    *line;
+    int     i;
+
+    if (!*buff)
+        return (NULL);
+    line = (char *)malloc(sizeof(char) * (ft_strlen(buff, '\n') + 2));
+    if (!line)
+        return (NULL);
+    i = 0;
+    while (buff[i] && buff[i] != '\n')
+    {
+        line[i] = buff[i];
+        i++;
+    }
+    if (buff[i] && buff[i] == '\n')
+        line[i++] = '\n';
+    line[i] = '\0';
+    return (line);
+}
+
+char    *read_file(int fd, char *buff)
+{
+    int     bytes_read;
+    char    *buffer;
+
+    if(!buff)
+        buff = (char *)malloc(sizeof(char));
+    buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
+    if (!buffer)
+        return (NULL);
+    bytes_read = 1;
+    while (!strchr(buff, '\n') && bytes_read)
+    {
+        bytes_read = read(fd, buffer, BUFFER_SIZE);
+        if (bytes_read == -1)
+        {
+            free(buffer);
+            free(buff);
+            buffer = NULL;
+            return (NULL);
+        }
+        buffer[bytes_read] = '\0';
+        buff = ft_strjoin(buff, buffer);
+    }
+    free (buffer);
+    return (buff);
+}
+
 char	*get_next_line(int fd)
 {
-	static char	*static_buf;
-	char		*line;
+    static char *buff;
+    char        *line;
 
-	if (fd < 0 || BUFFER_SIZE <= 0)
-		return (NULL);
-	static_buf = read_line(fd, static_buf);
-	if (!static_buf)
-		return (NULL);
-	line = get_line(static_buf);
-	static_buf = remove_line(static_buf);
-	return (line);
+    if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
+    {
+        if(buff)
+        {
+            free(buff);
+            buff = NULL;
+        }
+         return (NULL);
+    }
+    buff = read_file(fd, buff);
+    if (!buff)
+        return (NULL);
+    line = get_line(buff);
+    buff = remove_line(buff);
+    return (line);
 }

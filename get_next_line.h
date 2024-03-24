@@ -5,21 +5,22 @@
 # define BUFFER_SIZE 1024
 # endif
 
-# include <unistd.h>
-# include <stdlib.h>
-
-size_t  ft_strlen(char *s);
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 
 char	*ft_strchr(char *s, int c);
 
-char	*ft_strjoin(char *left_str, char *buff);
+char	*ft_strjoin(char *s1, char *s2);
 
-char	*read_line(int fd, char *static_buf);
-
-char	*get_line(char *statoc_buf);
-
-char	*remove_line(char *static_buf);
+int ft_strlen(char *s, char c);
 
 char	*get_next_line(int fd);
+
+char    *read_file(int fd, char *buff);
+
+char    *get_line(char *buff);
+
+char	*remove_line(char *static_buf);
 
 #endif
